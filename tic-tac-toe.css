@@ -1,0 +1,38 @@
+.game{
+    display:flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.game p{
+    float:left;
+    margin:16px;
+}
+
+.board{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    justify-items: center;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.tile{
+    min-width: 75px;
+    min-height: 75px;
+}
+
+.t1, .t2, .t3{
+border-bottom:black solid 2px;
+}
+
+.t1, .t4, .t7, .t2, .t5, .t8{
+border-right:black solid 2px;
+}
+
+.t7, .t8, .t9{
+border-top:black solid 2px;
+}
