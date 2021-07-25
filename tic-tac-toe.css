@@ -2,13 +2,23 @@
     display:flex;
     flex-direction: column;
     flex-wrap: wrap;
-    justify-content: center;
+    align-content: center;
     align-items: center;
+    max-width: max-content;
+    margin:0 auto;
 }
 
 .game p{
     float:left;
     margin:16px;
+}
+
+.game .turn-tracker{
+    margin-right:auto;
+}
+
+.win-text{
+    opacity: 0;
 }
 
 .board{
