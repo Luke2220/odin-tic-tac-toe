@@ -23,6 +23,8 @@
 .tile{
     min-width: 75px;
     min-height: 75px;
+    background-size: 75px 75px;
+    background-position: center center;
 }
 
 .t1, .t2, .t3{
