@@ -13,6 +13,11 @@
     margin:16px;
 }
 
+.game button{
+    float:left;
+    margin:8px;
+}
+
 .game .turn-tracker{
     margin-right:auto;
 }
