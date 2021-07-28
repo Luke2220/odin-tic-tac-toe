@@ -11,15 +11,15 @@ const player = (symbol, name) => {
 };
 
 const tile = (div) => {
-    let isTaken = false;
+    this.isTaken = false;
     const tileDiv = div;
 
     const reset = () =>{ 
-        isTaken = false;
+        this.isTaken = false;
         tileDiv.style.backgroundImage = 'none';
     }
 
-    return {isTaken, tileDiv};
+    return {isTaken, tileDiv,reset};
 }
 
 const gameBoard = (() => {
@@ -36,29 +36,39 @@ const gameBoard = (() => {
         return a;
     }
     const tileBoard = getTiles();
-    console.log(tileBoard);
     const setTile = (tile, symbol) => {
-        tile.tileDiv.style.backgroundImage = symbol;
-        tile.isTaken = true;
+        if (tile.isTaken == false){
+            tile.tileDiv.style.backgroundImage = symbol;
+            tile.isTaken = true;
+        } else{
+            return false;
+        }
     }
 
-    return {tileBoard, setTile};
+    const freezeBoard = () => {
+        tileBoard.forEach(element =>{
+            element.isTaken = true;
+        })
+    }
+
+    return {tileBoard, setTile, freezeBoard};
 })();
 
 const computerPlayer = (() =>{
     const getRandomNum = () =>{
-        Math.random() * (9 - 1) + 1;
+        return Math.round(Math.random() * 8);
     }
 
-    const pickTile = (playerAi) => {
-        tile = gameBoard.tileBoard[getRandomNum()];
+    const pickTile = (playerAi,safety) => {
+        if (safety == 10){console.log('could not find tile'); return;}
+        let tile = gameBoard.tileBoard[getRandomNum()];
         if (tile.isTaken == false)
         {
             gameBoard.setTile(tile,playerAi.symbol);
             playerAi.ourTiles.push(tile);
         }
         else{
-            pickTile(playerAi);
+            pickTile(playerAi, safety+1);
         }
     }
     return {pickTile};
@@ -74,6 +84,7 @@ const gameController = (() =>{
 
     const newGame = (computerOpponent) =>{
         gameBoard.tileBoard.forEach(element => {
+            element.isTaken = false;
             element.reset();
         })
         player1.ourTiles = [];
@@ -91,10 +102,11 @@ const gameController = (() =>{
 
     const changeTurn = () => {
         if (currentPlayer == player1){
-            currentPlayer = player2;
-            turnTracker.textContent = "Player 2's turn";
             if (player2.isComputer == true){
-                computerPlayer.pickTile(player2);
+                computerPlayer.pickTile(player2,0);
+            } else {
+                currentPlayer = player2;
+                turnTracker.textContent = "Player 2's turn";
             }
         } else{
             currentPlayer = player1;
@@ -106,13 +118,17 @@ const gameController = (() =>{
 
         gameBoard.tileBoard.forEach(element => {
             element.tileDiv.addEventListener('click', () => {
-                gameBoard.setTile(element, this.currentPlayer.symbol);
-                this.currentPlayer.ourTiles.push(element.target);
-                if(checkWin(this.currentPlayer.ourTiles)){           
-                    winText.textContent = `${this.currentPlayer.name} won!`;
-                    winText.style.opacity = 1;
+                if (gameBoard.setTile(element, this.currentPlayer.symbol) != false){
+                    this.currentPlayer.ourTiles.push(element);
+                    if(checkWin(this.currentPlayer.ourTiles)){           
+                        winText.textContent = `${this.currentPlayer.name} won!`;
+                        winText.style.opacity = 1;
+                        gameBoard.freezeBoard();
+                    }
+                    changeTurn();
+                }else{
+                    console.log('Tile Taken');
                 }
-                changeTurn();
             })
         });
     }
@@ -120,7 +136,7 @@ const gameController = (() =>{
     const checkWin = (playersTiles) =>{
         let ourTiles = '';
         playersTiles.forEach(element => {
-            ourTiles = ourTiles.concat(element.className);
+            ourTiles = ourTiles.concat(element.tileDiv.className);
         })
 
         if (ourTiles.includes('t1') && ourTiles.includes('t2') &&  ourTiles.includes('t3')){
