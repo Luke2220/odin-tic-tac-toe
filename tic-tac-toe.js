@@ -1,14 +1,26 @@
 const O = 'url(https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/LetterO.svg/1200px-LetterO.svg.png)';
 const X = 'url(https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Letter_x.svg/1200px-Letter_x.svg.png)';
 
-document.getElementsByClassName('new-1player')[0].addEventListener('click', () => {gameController.newGame()});
-document.getElementsByClassName('new-2player')[0].addEventListener('click', () => {gameController.newGame()});
+document.getElementsByClassName('new-1player')[0].addEventListener('click', () => {gameController.newGame(true)});
+document.getElementsByClassName('new-2player')[0].addEventListener('click', () => {gameController.newGame(false)});
 
 const player = (symbol, name) => {
-    const tilesTaken = [];
+    const ourTiles = [];
     let isComputer = false;
-    return {symbol,tilesTaken,name, isComputer};
+    return {symbol,ourTiles,name, isComputer};
 };
+
+const tile = (div) => {
+    let isTaken = false;
+    const tileDiv = div;
+
+    const reset = () =>{ 
+        isTaken = false;
+        tileDiv.style.backgroundImage = 'none';
+    }
+
+    return {isTaken, tileDiv};
+}
 
 const gameBoard = (() => {
     const tiles = document.getElementsByClassName('tile');
@@ -17,23 +29,39 @@ const gameBoard = (() => {
         a = [];
         for (let i = 0;i < tiles.length;i++)
         {
-            a.push(tiles.item(i));
+            newTile = tile(tiles.item(i));
+            console.log(newTile);
+            a.push(newTile);
         }
         return a;
     }
+    const tileBoard = getTiles();
+    console.log(tileBoard);
+    const setTile = (tile, symbol) => {
+        tile.tileDiv.style.backgroundImage = symbol;
+        tile.isTaken = true;
+    }
 
-    return {getTiles};
+    return {tileBoard, setTile};
 })();
 
 const computerPlayer = (() =>{
-    const getRandomTile = () =>{
+    const getRandomNum = () =>{
         Math.random() * (9 - 1) + 1;
     }
 
-    const pickTile = () => {
-        gameBoard.getTiles()[getRandomTile()].style.backgroundImage = player.symbol;
+    const pickTile = (playerAi) => {
+        tile = gameBoard.tileBoard[getRandomNum()];
+        if (tile.isTaken == false)
+        {
+            gameBoard.setTile(tile,playerAi.symbol);
+            playerAi.ourTiles.push(tile);
+        }
+        else{
+            pickTile(playerAi);
+        }
     }
-
+    return {pickTile};
 })()
 
 const gameController = (() =>{
@@ -45,11 +73,11 @@ const gameController = (() =>{
     this.currentPlayer = player1;
 
     const newGame = (computerOpponent) =>{
-        gameBoard.getTiles().forEach(element => {
-            element.style.backgroundImage = 'none';
+        gameBoard.tileBoard.forEach(element => {
+            element.reset();
         })
-        player1.tilesTaken = [];
-        player2.tilesTaken = [];
+        player1.ourTiles = [];
+        player2.ourTiles = [];
         winText.style.opacity = 0;
         turnTracker.textContent = "Player 1's turn"
         this.currentPlayer = player1;
@@ -66,7 +94,7 @@ const gameController = (() =>{
             currentPlayer = player2;
             turnTracker.textContent = "Player 2's turn";
             if (player2.isComputer == true){
-                
+                computerPlayer.pickTile(player2);
             }
         } else{
             currentPlayer = player1;
@@ -76,11 +104,11 @@ const gameController = (() =>{
 
     const playGame = () => {
 
-        gameBoard.getTiles().forEach(element => {
-            element.addEventListener('click', (element) => {
-                element.target.style.backgroundImage = this.currentPlayer.symbol;
-                this.currentPlayer.tilesTaken.push(element.target);
-                if(checkWin(this.currentPlayer.tilesTaken)){           
+        gameBoard.tileBoard.forEach(element => {
+            element.tileDiv.addEventListener('click', () => {
+                gameBoard.setTile(element, this.currentPlayer.symbol);
+                this.currentPlayer.ourTiles.push(element.target);
+                if(checkWin(this.currentPlayer.ourTiles)){           
                     winText.textContent = `${this.currentPlayer.name} won!`;
                     winText.style.opacity = 1;
                 }
